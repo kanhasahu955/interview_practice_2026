@@ -1,0 +1,15 @@
+# Build the API Docker image on every push / PR (catches Dockerfile + requirements breaks).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docker-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker compose -f docker-compose.yml build api

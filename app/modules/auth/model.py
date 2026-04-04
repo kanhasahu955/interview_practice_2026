@@ -22,7 +22,9 @@ class User(SQLModel, table=True):
     full_name: str | None = Field(default=None, sa_column=Column(String(200), nullable=True))
     role: UserRole = Field(
         default=UserRole.learner,
-        sa_column=Column(SAEnum(UserRole), nullable=False),
+        # native_enum=False: store as VARCHAR (no PostgreSQL CREATE TYPE). Avoids duplicate
+        # CREATE TYPE when multiple Gunicorn workers run lifespan/create_all at the same time.
+        sa_column=Column(SAEnum(UserRole, native_enum=False), nullable=False),
     )
     is_active: bool = Field(default=True)
     created_at: datetime | None = Field(

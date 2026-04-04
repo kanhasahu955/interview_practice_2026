@@ -8,8 +8,12 @@ PROD_COMPOSE ?= deploy/production/compose.yml
 COMPOSE_PROD := -f $(PROD_COMPOSE)
 UV           := $(shell command -v uv 2>/dev/null)
 
-.PHONY: help setup env lock clean \
-	docker-build docker-up docker-down docker-logs docker-ps db dev prod prod-down prod-logs prod-ps prod-bundle
+DOCKER_LOCAL_ENV := $(PROJECT_ROOT)/deploy/local/docker.env
+
+.PHONY: help setup env lock clean docs \
+	docker-build docker-up docker-down docker-logs docker-ps \
+	docker-local docker-local-down docker-local-logs docker-local-ps \
+	db dev prod prod-down prod-logs prod-ps prod-bundle
 
 help: ## Show available targets
 	@echo "mo-april — FastAPI API"
@@ -17,10 +21,17 @@ help: ## Show available targets
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?##' $(MAKEFILE_LIST) | sort | \
 		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 	@echo ""
+	@echo "  \033[1mFull ops checklist\033[0m     docs/RUNBOOK.md   (or: make docs)"
 	@echo "  \033[1mOne-shot bootstrap\033[0m    make setup"
 	@echo "  \033[1mLocal development\033[0m      make db && make dev"
+	@echo "  \033[1mLocal Docker stack\033[0m     make docker-local   (Postgres + API + nginx :8080)"
+	@echo "  \033[1mShell automation\033[0m       ./scripts/docker-local-up.sh"
 	@echo "  \033[1mProduction (Docker)\033[0m    make prod   (see deploy/production/env.example)"
 	@echo ""
+
+docs: ## Open documentation index path (prints location)
+	@echo "$(PROJECT_ROOT)/docs/README.md"
+	@echo "$(PROJECT_ROOT)/docs/RUNBOOK.md"
 
 setup: env ## Bootstrap: .env from example + install deps (uv sync)
 	@test -n "$(UV)" || (echo "Install uv: https://docs.astral.sh/uv/" && exit 1)
@@ -65,6 +76,23 @@ docker-logs: ## Follow logs (base compose)
 
 docker-ps: ## Service status (base compose)
 	$(COMPOSE) $(COMPOSE_BASE) ps
+
+docker-local: ## Full stack locally: Postgres + API + nginx (uses deploy/local/docker.env)
+	@test -f $(DOCKER_LOCAL_ENV) || (echo "Missing $(DOCKER_LOCAL_ENV)" && exit 1)
+	cd $(PROJECT_ROOT) && set -a && . $(DOCKER_LOCAL_ENV) && set +a && $(COMPOSE) $(COMPOSE_BASE) up --build -d
+	@echo ""
+	@echo "  Local Docker: http://127.0.0.1:8080  (override NGINX_HTTP_PORT in deploy/local/docker.env)"
+	@echo "  Logs: make docker-local-logs   Stop: make docker-local-down   Runbook: docs/RUNBOOK.md"
+	@echo ""
+
+docker-local-down: ## Stop local Docker stack (same compose project as docker-local)
+	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) down
+
+docker-local-logs: ## Follow logs (local Docker stack)
+	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) logs -f
+
+docker-local-ps: ## Status (local Docker stack)
+	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) ps
 
 prod: ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d

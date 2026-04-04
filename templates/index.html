@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">{{ title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <h1 class="doc-article__title">{{ title }}</h1>
+  <p class="doc-lead">
+    Learning API and static study layout. Use the header for OpenAPI, health checks, bundled Markdown, and chapter notes under
+    <code>/study/topics/</code>.
+  </p>
+
+  <section class="doc-section" id="summary">
+    <h2 class="doc-section__title">Summary</h2>
+    <p>
+      This site is a <strong>FastAPI</strong> backend with Jinja2 pages, versioned JSON under
+      <code>{{ api_prefix }}</code>, and static study content. Open <a href="/docs">API docs</a> to explore endpoints interactively.
+    </p>
+  </section>
+
+  <section class="doc-section" id="introduction">
+    <h2 class="doc-section__title">Introduction</h2>
+    <p>Typical flow:</p>
+    <pre class="code-block"><code># Example base URL (adjust host/port)
+base = "http://127.0.0.1:8000"
+health = f"{base}{{ api_prefix }}/meta/health"</code></pre>
+    <p>
+      Prefer <a href="/reference">Scalar reference</a> or <a href="/docs">Swagger UI</a> for request shapes and schemas.
+    </p>
+  </section>
+</article>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav" aria-label="On this page">
+  <p class="sidebar-nav__heading">On this page</p>
+  <ul class="sidebar-nav__list">
+    <li><a href="#summary">Summary</a></li>
+    <li><a href="#introduction">Introduction</a></li>
+  </ul>
+</nav>
+<nav class="sidebar-nav sidebar-nav--spaced" aria-label="Resources">
+  <p class="sidebar-nav__heading">Resources</p>
+  <ul class="sidebar-nav__list">
+    <li><a href="/docs">API docs</a></li>
+    <li><a href="/reference">Reference</a></li>
+    <li><a href="{{ api_prefix }}/meta/health">Health JSON</a></li>
+    <li><a href="/study/topics/">Chapters</a></li>
+  </ul>
+</nav>
+{% endblock %}

@@ -1,0 +1,24 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets (never commit)
+.env
+.env.local
+.env.*.local
+
+# Runtime / generated
+logs/*.log
+upload/*
+!upload/.gitkeep
+media/*.pdf
+
+# Old nginx path (migrated to docker/nginx/)
+nginx/

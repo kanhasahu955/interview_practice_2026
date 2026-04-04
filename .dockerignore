@@ -1,0 +1,10 @@
+.venv
+venv
+.git
+pdf-output
+__pycache__
+*.py[cod]
+.env
+.pytest_cache
+*.egg-info
+dist

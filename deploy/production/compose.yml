@@ -1,0 +1,35 @@
+# Reusable production overlay. Merge from repo root:
+#   docker compose -f docker-compose.yml -f deploy/production/compose.yml up -d
+#   make prod
+# Reuse elsewhere: copy this whole `deploy/production/` tree (or symlink), then either
+#   - keep the same path under your repo and use default PROD_COMPOSE, or
+#   - set PROD_COMPOSE=path/to/your/compose.yml and fix the nginx bind path to match your layout.
+#
+# The nginx volume path is relative to the *primary* compose file (repo root), not this file.
+
+services:
+  db:
+    restart: unless-stopped
+
+  api:
+    restart: unless-stopped
+    environment:
+      PYTHONOPTIMIZE: "1"
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    command:
+      - gunicorn
+      - main:app
+      - -w
+      - "${GUNICORN_WORKERS:-4}"
+      - -k
+      - uvicorn.workers.UvicornWorker
+      - -b
+      - 0.0.0.0:8000
+      - --timeout
+      - "${GUNICORN_TIMEOUT:-120}"
+
+  nginx:
+    restart: unless-stopped
+    # Path is from repo root (primary compose file dir), not deploy/production/.
+    volumes:
+      - ./deploy/production/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro

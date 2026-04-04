@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark" data-api-prefix="{{ api_prefix|default('/api/v1') }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{{ title }}{% endblock %} · mo-april</title>
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <a href="/" class="site-brand">
+        <span class="site-brand__mark" aria-hidden="true">{{ (title or "M")[0]|upper }}</span>
+        <span class="site-brand__text">
+          <span class="site-brand__title">{{ title }}</span>
+          <span class="site-brand__subtitle">Learning</span>
+        </span>
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="/">Home</a>
+        <a href="/docs">API docs</a>
+        <a href="{{ api_prefix }}/meta/health">Health</a>
+        <a href="/content/overview.md">Content</a>
+        <a href="/study/topics/">Chapters</a>
+        <button type="button" class="site-nav__btn" id="cookie-settings-open" aria-controls="cookie-consent-root">
+          Cookies
+        </button>
+      </nav>
+      <div class="site-header__tools">
+        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle light or dark theme" title="Theme">
+          <span class="icon-btn__sun" aria-hidden="true">☀</span>
+          <span class="icon-btn__moon" aria-hidden="true">☾</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="site-shell">
+    <aside class="site-aside site-aside--left" aria-hidden="true"></aside>
+    <div class="site-column-main">
+      {% block breadcrumbs %}{% endblock %}
+      <main class="site-main" id="main-content">
+        {% block body %}{% endblock %}
+      </main>
+    </div>
+    <aside class="site-aside site-aside--right">
+      {% block sidebar %}{% endblock %}
+    </aside>
+  </div>
+
+  <div id="cookie-consent-root" class="cookie-consent-root" hidden></div>
+  <script src="/static/js/app.js" defer></script>
+  <script src="/static/js/cookie-consent.js" defer></script>
+</body>
+</html>

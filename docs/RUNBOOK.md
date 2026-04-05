@@ -113,6 +113,10 @@ make docker-local
 
 **`-v` deletes local Postgres data** — dev only.
 
+### VPS: nginx “mount … default.conf … not a directory”
+
+The host path **`deploy/production/nginx/default.conf`** must be a **regular file**. If it was missing once, Docker may have created a **directory** with that name — remove it and restore from git: **`rm -rf deploy/production/nginx/default.conf && git checkout HEAD -- deploy/production/nginx/default.conf`**. See **[deploy/hostinger/README.md](../deploy/hostinger/README.md)** § *Nginx fails to start*.
+
 ### Port already in use (5432 or 8080)
 
 Edit **`deploy/local/docker.env`**: change `POSTGRES_PUBLISH_PORT` and/or `NGINX_HTTP_PORT`, then `make docker-local` again.

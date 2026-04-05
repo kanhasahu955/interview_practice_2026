@@ -162,6 +162,30 @@ If you use **Supabase** (`make prod-external-db`):
 make prod-external-db
 ```
 
+## 9b. Nginx fails to start: “mount … default.conf … not a directory”
+
+Compose mounts **`deploy/production/nginx/default.conf`** (a **file**) into the nginx container. This error usually means:
+
+1. **The path is a directory** — Docker created an empty folder named `default.conf` the first time the real file was missing.
+2. **The file was never deployed** — incomplete clone or wrong branch.
+
+On the VPS, from the project root:
+
+```bash
+ls -la deploy/production/nginx/default.conf
+```
+
+- If it shows **`d`** (directory): remove it and restore the file from git:
+
+```bash
+rm -rf deploy/production/nginx/default.conf
+git checkout HEAD -- deploy/production/nginx/default.conf
+```
+
+- If **missing**: `git pull` and ensure your repo contains **`deploy/production/nginx/default.conf`**, or copy it from this project.
+
+Then run **`make prod-external-db`** (or **`make prod`**) again. **`make`** now runs a quick check before those targets.
+
 ## 10. Logs and backups
 
 - Logs: `docker compose -f docker-compose.yml -f deploy/production/compose.yml logs -f api`

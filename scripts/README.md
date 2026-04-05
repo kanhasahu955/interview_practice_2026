@@ -6,7 +6,7 @@ Executable helpers (run from **repository root**).
 |--------|------------|
 | `docker-local-up.sh` | `make docker-local` |
 | `docker-local-down.sh` | `make docker-local-down` |
-| `dev-stack.sh` | `make db` + instructions for `make dev` |
+| `dev-stack.sh` | Same as **`make db-dev`** (Postgres container + Uvicorn reload) |
 
 First time:
 

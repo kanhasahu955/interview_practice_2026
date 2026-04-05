@@ -64,21 +64,34 @@ Set at least:
 | Variable | Notes |
 |----------|--------|
 | `JWT_SECRET_KEY` | e.g. `openssl rand -hex 32` |
-| `POSTGRES_PASSWORD` | Strong password; must match `DATABASE_URL` |
-| `DATABASE_URL` | Keep `...@db:5432/...` when using Compose service `db` |
+| `DATABASE_URL` | **Bundled Postgres:** `...@db:5432/...` · **Supabase:** see [deploy/supabase/README.md](../supabase/README.md) |
+| `POSTGRES_*` | Only when using the Compose **`db`** service (not needed for Supabase-only) |
 | `CORS_ORIGINS` | `https://yourdomain.com,https://www.yourdomain.com` |
 | `NGINX_HTTP_PORT` | `80` for production |
 
 Optional: `APP_NAME`, `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` for a first admin user.
 
+### Supabase instead of Docker Postgres
+
+1. In **`.env`**, set **`DATABASE_URL`** to your Supabase **direct** connection (user `postgres`, host `db.<project-ref>.supabase.co`, port `5432`, database `postgres`). Use the **database password** from the Supabase dashboard, not the anon key. Details: **[deploy/supabase/README.md](../supabase/README.md)**.
+2. Start **only** **`api`** and **`nginx`** (no local `db` container):
+
+```bash
+make prod-external-db
+```
+
 ## 7. Start the stack (HTTP first)
 
-From `/opt/mo-april`:
+From `/opt/mo-april`.
+
+**Bundled Postgres** (`DATABASE_URL` host is `db`):
 
 ```bash
 docker compose -f docker-compose.yml -f deploy/production/compose.yml up --build -d
 docker compose -f docker-compose.yml -f deploy/production/compose.yml ps
 ```
+
+**Supabase / external Postgres** — use **`make prod-external-db`** (see subsection above) instead of the command above.
 
 Open `http://YOUR_VPS_IP` or `http://yourdomain.com`. You should see the HTML home page and `/docs` for the API.
 
@@ -143,16 +156,23 @@ git pull
 docker compose -f docker-compose.yml -f deploy/production/compose.yml up --build -d
 ```
 
+If you use **Supabase** (`make prod-external-db`):
+
+```bash
+make prod-external-db
+```
+
 ## 10. Logs and backups
 
 - Logs: `docker compose -f docker-compose.yml -f deploy/production/compose.yml logs -f api`
-- Database: schedule **volume** or `pg_dump` backups (Hostinger snapshots + off-server copies).
+- Database: with **bundled Postgres**, schedule volume snapshots / `pg_dump`. With **Supabase**, use project backups in the Supabase dashboard (and still export off-site if you need your own copy).
 
 ## Files in this folder
 
 | File | Purpose |
 |------|--------|
-| `env.hostinger.example` | VPS-oriented `.env` template |
+| `env.hostinger.example` | VPS-oriented `.env` template (bundled Postgres or **Supabase** `DATABASE_URL`) |
+| `../supabase/README.md` | Supabase connection URL and `make prod-external-db` |
 | `nginx/default-https.conf.example` | TLS reverse proxy example |
 | `docker-compose.override.example.yml` | Copy to repo root as `docker-compose.override.yml` for HTTPS |
 

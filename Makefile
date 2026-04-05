@@ -9,11 +9,13 @@ COMPOSE_PROD := -f $(PROD_COMPOSE)
 UV           := $(shell command -v uv 2>/dev/null)
 
 DOCKER_LOCAL_ENV := $(PROJECT_ROOT)/deploy/local/docker.env
+SUPABASE_COMPOSE_ENV := $(PROJECT_ROOT)/deploy/supabase/compose.env
 
 .PHONY: help setup env lock clean docs \
 	docker-build docker-up docker-down docker-logs docker-ps \
 	docker-local docker-local-down docker-local-logs docker-local-ps \
-	db dev prod prod-down prod-logs prod-ps prod-bundle
+	docker-local-supabase \
+	db db-dev dev prod prod-down prod-logs prod-ps prod-bundle prod-external-db
 
 help: ## Show available targets
 	@echo "mo-april — FastAPI API"
@@ -23,8 +25,11 @@ help: ## Show available targets
 	@echo ""
 	@echo "  \033[1mFull ops checklist\033[0m     docs/RUNBOOK.md   (or: make docs)"
 	@echo "  \033[1mOne-shot bootstrap\033[0m    make setup"
-	@echo "  \033[1mLocal development\033[0m      make db && make dev"
+	@echo "  \033[1mLocal + Docker Postgres\033[0m  make db-dev   (not make db && make dev if .env is MySQL)"
+	@echo "  \033[1mLocal + your DATABASE_URL\033[0m  make dev      (uses .env only)"
 	@echo "  \033[1mLocal Docker stack\033[0m     make docker-local   (Postgres + API + nginx :8080)"
+	@echo "  \033[1mLocal Docker + Supabase\033[0m  make docker-local-supabase   (deploy/supabase/compose.env)"
+	@echo "  \033[1mVPS + external Postgres\033[0m  make prod-external-db   (.env DATABASE_URL e.g. Supabase)"
 	@echo "  \033[1mShell automation\033[0m       ./scripts/docker-local-up.sh"
 	@echo "  \033[1mProduction (Docker)\033[0m    make prod   (see deploy/production/env.example)"
 	@echo ""
@@ -38,7 +43,7 @@ setup: env ## Bootstrap: .env from example + install deps (uv sync)
 	cd $(PROJECT_ROOT) && $(UV) sync
 	@echo ""
 	@echo "  Done. Choose one:"
-	@echo "    make db && make dev   # Postgres in Docker, API locally with reload"
+	@echo "    make db-dev           # Postgres in Docker + API reload (works with MySQL in .env)"
 	@echo "    make prod             # nginx + API + Postgres (uses $(PROD_COMPOSE))"
 	@echo ""
 
@@ -94,6 +99,15 @@ docker-local-logs: ## Follow logs (local Docker stack)
 docker-local-ps: ## Status (local Docker stack)
 	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) ps
 
+docker-local-supabase: ## API + nginx only; DB = Supabase (create deploy/supabase/compose.env from example)
+	@test -f $(SUPABASE_COMPOSE_ENV) || (echo "Missing $(SUPABASE_COMPOSE_ENV) — cp deploy/supabase/compose.env.example" >&2 && exit 1)
+	cd $(PROJECT_ROOT) && set -a && . $(SUPABASE_COMPOSE_ENV) && set +a && \
+	  $(COMPOSE) $(COMPOSE_BASE) up --build -d --no-deps api nginx
+	@echo ""
+	@echo "  Supabase-backed Docker: http://127.0.0.1:$${NGINX_HTTP_PORT:-8080}"
+	@echo "  Stop: make docker-local-down   Docs: deploy/supabase/README.md"
+	@echo ""
+
 prod: ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d
 	@echo ""
@@ -110,11 +124,23 @@ prod-logs: ## Follow production stack logs
 prod-ps: ## Production stack status
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) ps
 
-db: ## Start Postgres only (for local make dev)
+prod-external-db: ## Production compose without bundled Postgres; DATABASE_URL from repo .env (e.g. Supabase)
+	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d --no-deps api nginx
+	@echo ""
+	@echo "  api + nginx only — ensure .env sets DATABASE_URL (e.g. Supabase). deploy/supabase/README.md"
+	@echo ""
+
+db: ## Start Postgres only (Compose). Pair with make db-dev if .env points at MySQL.
 	$(COMPOSE) $(COMPOSE_BASE) up -d db
 	@echo "Postgres: localhost:$${POSTGRES_PUBLISH_PORT:-5432} db=$${POSTGRES_DB:-moapril} user=$${POSTGRES_USER:-learn}"
 
-dev: ## Local API: uvicorn with reload (PYTHONPATH=project root)
+db-dev: db ## Uvicorn reload against Docker Postgres (builds DATABASE_URL from POSTGRES_* in .env)
+	@test -n "$(UV)" || (echo "Install uv and run: make setup" && exit 1)
+	cd $(PROJECT_ROOT) && if [ -f ./.env ]; then set -a && . ./.env && set +a; fi && \
+		export DATABASE_URL="postgresql+psycopg2://$${POSTGRES_USER:-learn}:$${POSTGRES_PASSWORD:-learn}@127.0.0.1:$${POSTGRES_PUBLISH_PORT:-5432}/$${POSTGRES_DB:-moapril}" && \
+		PYTHONPATH=$(PROJECT_ROOT) $(UV) run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+
+dev: ## Local API: uvicorn with reload (uses DATABASE_URL from .env as-is)
 	@test -n "$(UV)" || (echo "Install uv and run: make setup" && exit 1)
 	cd $(PROJECT_ROOT) && PYTHONPATH=$(PROJECT_ROOT) $(UV) run uvicorn main:app --reload --host 0.0.0.0 --port 8000
 

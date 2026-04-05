@@ -39,7 +39,8 @@ class Settings(BaseSettings):
         description=(
             "Sync-style URL; runtime uses database_url_async. "
             "MySQL: mysql+pymysql or mysql+aiomysql. "
-            "Postgres / Supabase: postgresql+psycopg2 or postgresql://."
+            "Postgres / Supabase: postgresql+psycopg2://… (Supabase: deploy/supabase/README.md). "
+            "Hosts *.supabase.co get TLS for asyncpg unless ssl/sslmode is already in the URL."
         ),
     )
 

@@ -13,8 +13,9 @@ FastAPI learning stack. **`app/`** holds the ASGI factory (`app/main.py`) and al
 **Fast paths:**
 
 ```bash
-make setup && make db && make dev          # API http://127.0.0.1:8000 (reload)
+make setup && make db-dev                  # Docker Postgres + API http://127.0.0.1:8000 (reload)
 ./scripts/docker-local-up.sh               # Full stack http://127.0.0.1:8080 (same as make docker-local)
+make docker-local-supabase                 # API + nginx → Supabase (see deploy/supabase/compose.env.example)
 ```
 
 - Hostinger VPS: **[deploy/hostinger/README.md](deploy/hostinger/README.md)**
@@ -47,7 +48,8 @@ Imports assume **`PYTHONPATH`** = repo root (`make dev` handles this).
 ## Run (summary)
 
 ```bash
-make db && make dev
+make db-dev          # Postgres in Docker + Uvicorn (ignores MySQL DATABASE_URL for this run)
+# or: set DATABASE_URL to Postgres in .env, then: make db && make dev
 ```
 
 See **[docs/RUNBOOK.md](docs/RUNBOOK.md)** for Docker, production, and VPS.

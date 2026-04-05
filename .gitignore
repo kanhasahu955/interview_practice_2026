@@ -13,6 +13,7 @@ wheels/
 .env
 .env.local
 .env.*.local
+deploy/supabase/compose.env
 
 # Per-machine Docker overrides (e.g. Hostinger VPS TLS mounts)
 docker-compose.override.yml

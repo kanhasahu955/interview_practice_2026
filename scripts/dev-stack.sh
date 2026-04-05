@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start only Postgres for local API development; you run make dev separately.
+# Start Docker Postgres, then run the API with reload wired to that DB (same as: make db-dev).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -9,11 +9,4 @@ if ! command -v make >/dev/null 2>&1; then
   exit 1
 fi
 
-make db
-
-echo ""
-echo "  Postgres is up. Point DATABASE_URL in .env at this instance if needed."
-echo "  Then run:  make dev"
-echo "  Open:      http://127.0.0.1:8000"
-echo "  Runbook:   docs/RUNBOOK.md"
-echo ""
+make db-dev

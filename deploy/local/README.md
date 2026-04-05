@@ -4,6 +4,8 @@ Full checklist and troubleshooting: **[docs/RUNBOOK.md](../../docs/RUNBOOK.md)**
 
 Runs **Postgres**, the **API** (Gunicorn + Uvicorn in the image), and **nginx** on **`http://127.0.0.1:8080`** by default.
 
+To use **Supabase** instead of the Compose **`db`** service: **`make docker-local-supabase`** and **`deploy/supabase/compose.env`** — see **[deploy/supabase/README.md](../supabase/README.md)**.
+
 ```bash
 make docker-local
 ```

@@ -9,7 +9,7 @@
 #   sudo systemctl stop nginx   # if any host nginx uses 80
 #   sudo certbot certonly --standalone -d yourdomain.com -d www.yourdomain.com
 #
-# Replace deploy/production/nginx/default.conf with the contents of
+# Replace docker/nginx/default.conf with the contents of
 # deploy/hostinger/nginx/default-https.conf.example (edit server_name + paths).
 
 services:
@@ -18,5 +18,5 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./deploy/production/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
       - /etc/letsencrypt:/etc/letsencrypt:ro

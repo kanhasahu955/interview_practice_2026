@@ -115,7 +115,7 @@ make docker-local
 
 ### VPS: nginx “mount … default.conf … not a directory”
 
-The host path **`deploy/production/nginx/default.conf`** must be a **regular file**. If it was missing once, Docker may have created a **directory** with that name — remove it and restore from git: **`rm -rf deploy/production/nginx/default.conf && git checkout HEAD -- deploy/production/nginx/default.conf`**. See **[deploy/hostinger/README.md](../deploy/hostinger/README.md)** § *Nginx fails to start*.
+The host path **`docker/nginx/default.conf`** must be a **regular file**. If it was missing once, Docker may have created a **directory** with that name — remove it and restore from git: **`rm -rf docker/nginx/default.conf && git checkout HEAD -- docker/nginx/default.conf`**. See **[deploy/hostinger/README.md](../deploy/hostinger/README.md)** § *Nginx fails to start*.
 
 ### Port already in use (5432 or 8080)
 
@@ -161,4 +161,4 @@ On **GitHub**, pushing or opening a PR runs **`.github/workflows/ci.yml`**, whic
 | `docker/Dockerfile` | API image |
 | `docker/nginx/default.conf` | Dev-style nginx for Compose |
 | `deploy/production/compose.yml` | Prod overrides (Gunicorn command, prod nginx mount) |
-| `deploy/production/nginx/default.conf` | Prod nginx → `api:8000` |
+| `docker/nginx/default.conf` | Nginx → `api:8000` (base + production compose) |

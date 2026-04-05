@@ -10,24 +10,24 @@ UV           := $(shell command -v uv 2>/dev/null)
 
 DOCKER_LOCAL_ENV := $(PROJECT_ROOT)/deploy/local/docker.env
 SUPABASE_COMPOSE_ENV := $(PROJECT_ROOT)/deploy/supabase/compose.env
-NGINX_PROD_CONF := $(PROJECT_ROOT)/deploy/production/nginx/default.conf
+NGINX_CONF := $(PROJECT_ROOT)/docker/nginx/default.conf
 
 .PHONY: help setup env lock clean docs \
 	docker-build docker-up docker-down docker-logs docker-ps \
 	docker-local docker-local-down docker-local-logs docker-local-ps \
 	docker-local-supabase \
-	_check-prod-nginx-conf \
+	_check-nginx-conf \
 	db db-dev dev prod prod-down prod-logs prod-ps prod-bundle prod-external-db
 
 # prod / prod-external-db bind-mount this file; Docker creates a DIRECTORY if it was missing → mount fails.
-_check-prod-nginx-conf:
-	@if [ -d "$(NGINX_PROD_CONF)" ]; then \
-	  echo "ERROR: $(NGINX_PROD_CONF) is a directory (Docker often creates this when the file was missing)." >&2; \
-	  echo "Fix:  rm -rf deploy/production/nginx/default.conf && git checkout HEAD -- deploy/production/nginx/default.conf" >&2; \
+_check-nginx-conf:
+	@if [ -d "$(NGINX_CONF)" ]; then \
+	  echo "ERROR: $(NGINX_CONF) is a directory (Docker often creates this when the file was missing)." >&2; \
+	  echo "Fix:  rm -rf docker/nginx/default.conf && git checkout HEAD -- docker/nginx/default.conf" >&2; \
 	  exit 1; \
 	fi
-	@if [ ! -f "$(NGINX_PROD_CONF)" ]; then \
-	  echo "ERROR: Missing $(NGINX_PROD_CONF). Run: git pull   (repo must include deploy/production/nginx/)" >&2; \
+	@if [ ! -f "$(NGINX_CONF)" ]; then \
+	  echo "ERROR: Missing $(NGINX_CONF). Your repo must include the docker/ tree (docker-compose + Dockerfile)." >&2; \
 	  exit 1; \
 	fi
 
@@ -74,7 +74,7 @@ env: ## Copy .env.example -> .env if missing
 prod-bundle: ## Show reusable production config paths (copy deploy/production/ for other projects)
 	@echo "Production bundle (copy as a unit or override PROD_COMPOSE=...):"
 	@echo "  $(PROJECT_ROOT)/deploy/production/compose.yml"
-	@echo "  $(PROJECT_ROOT)/deploy/production/nginx/default.conf"
+	@echo "  $(PROJECT_ROOT)/docker/nginx/default.conf"
 	@echo "  $(PROJECT_ROOT)/deploy/production/env.example"
 
 lock: ## Refresh uv.lock after editing pyproject.toml
@@ -122,7 +122,7 @@ docker-local-supabase: ## API + nginx only; DB = Supabase (create deploy/supabas
 	@echo "  Stop: make docker-local-down   Docs: deploy/supabase/README.md"
 	@echo ""
 
-prod: _check-prod-nginx-conf ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
+prod: _check-nginx-conf ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d
 	@echo ""
 	@echo "  Stack is up. HTTP (via nginx): http://localhost:$${NGINX_HTTP_PORT:-8080}"
@@ -138,7 +138,7 @@ prod-logs: ## Follow production stack logs
 prod-ps: ## Production stack status
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) ps
 
-prod-external-db: _check-prod-nginx-conf ## Production compose without bundled Postgres; DATABASE_URL from repo .env (e.g. Supabase)
+prod-external-db: _check-nginx-conf ## Production compose without bundled Postgres; DATABASE_URL from repo .env (e.g. Supabase)
 	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d --no-deps api nginx
 	@echo ""
 	@echo "  api + nginx only — ensure .env sets DATABASE_URL (e.g. Supabase). deploy/supabase/README.md"

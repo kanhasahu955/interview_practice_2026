@@ -30,6 +30,6 @@ services:
 
   nginx:
     restart: unless-stopped
-    # Path is from repo root (primary compose file dir), not deploy/production/.
+    # Same file as base compose — avoids missing deploy/production/nginx/ on minimal clones.
     volumes:
-      - ./deploy/production/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro

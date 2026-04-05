@@ -121,8 +121,8 @@ The API container runs **Gunicorn + Uvicorn workers**; the database creates tabl
 4. Copy the example TLS nginx config and edit `server_name` and certificate paths if your domain differs:
 
    ```bash
-   cp deploy/hostinger/nginx/default-https.conf.example deploy/production/nginx/default.conf
-   nano deploy/production/nginx/default.conf
+   cp deploy/hostinger/nginx/default-https.conf.example docker/nginx/default.conf
+   nano docker/nginx/default.conf
    ```
 
 5. Add a **Docker override** so nginx can read certs and listen on 443:
@@ -164,27 +164,27 @@ make prod-external-db
 
 ## 9b. Nginx fails to start: “mount … default.conf … not a directory”
 
-Compose mounts **`deploy/production/nginx/default.conf`** (a **file**) into the nginx container. This error usually means:
+Compose mounts **`docker/nginx/default.conf`** (a **file**) into the nginx container. This error usually means:
 
 1. **The path is a directory** — Docker created an empty folder named `default.conf` the first time the real file was missing.
-2. **The file was never deployed** — incomplete clone or wrong branch.
+2. **The file was never deployed** — repo missing the **`docker/nginx/`** tree (unusual if you use this project’s Dockerfile).
 
 On the VPS, from the project root:
 
 ```bash
-ls -la deploy/production/nginx/default.conf
+ls -la docker/nginx/default.conf
 ```
 
 - If it shows **`d`** (directory): remove it and restore the file from git:
 
 ```bash
-rm -rf deploy/production/nginx/default.conf
-git checkout HEAD -- deploy/production/nginx/default.conf
+rm -rf docker/nginx/default.conf
+git checkout HEAD -- docker/nginx/default.conf
 ```
 
-- If **missing**: `git pull` and ensure your repo contains **`deploy/production/nginx/default.conf`**, or copy it from this project.
+- If **missing**: `git pull` and ensure **`docker/nginx/default.conf`** exists (same layout as this repo), or copy that file from the template project.
 
-Then run **`make prod-external-db`** (or **`make prod`**) again. **`make`** now runs a quick check before those targets.
+Then run **`make prod-external-db`** (or **`make prod`**) again. **`make`** checks this path before those targets.
 
 ## 10. Logs and backups
 

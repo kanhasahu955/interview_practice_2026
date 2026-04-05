@@ -16,19 +16,43 @@ NGINX_CONF := $(PROJECT_ROOT)/docker/nginx/default.conf
 	docker-build docker-up docker-down docker-logs docker-ps \
 	docker-local docker-local-down docker-local-logs docker-local-ps \
 	docker-local-supabase \
-	_check-nginx-conf \
+	_ensure-nginx-conf \
 	db db-dev dev prod prod-down prod-logs prod-ps prod-bundle prod-external-db
 
-# prod / prod-external-db bind-mount this file; Docker creates a DIRECTORY if it was missing → mount fails.
-_check-nginx-conf:
+# prod / prod-external-db bind-mount docker/nginx/default.conf.
+# Auto-create the file + directory if missing so minimal VPS clones work without extra steps.
+# If Docker already created a *directory* at that path (broken earlier run), error with a fix hint.
+_ensure-nginx-conf:
 	@if [ -d "$(NGINX_CONF)" ]; then \
-	  echo "ERROR: $(NGINX_CONF) is a directory (Docker often creates this when the file was missing)." >&2; \
-	  echo "Fix:  rm -rf docker/nginx/default.conf && git checkout HEAD -- docker/nginx/default.conf" >&2; \
+	  echo "ERROR: $(NGINX_CONF) is a DIRECTORY (Docker created it on a previous failed mount)." >&2; \
+	  echo "Fix:  rm -rf docker/nginx/default.conf" >&2; \
+	  echo "      Then run make prod-external-db again — it will auto-create the file." >&2; \
 	  exit 1; \
 	fi
 	@if [ ! -f "$(NGINX_CONF)" ]; then \
-	  echo "ERROR: Missing $(NGINX_CONF). Your repo must include the docker/ tree (docker-compose + Dockerfile)." >&2; \
-	  exit 1; \
+	  echo "  [nginx] docker/nginx/default.conf not found — creating it now..."; \
+	  mkdir -p "$(PROJECT_ROOT)/docker/nginx"; \
+	  printf '%s\n' \
+	    'upstream moapril_api { server api:8000; keepalive 32; }' \
+	    'server {' \
+	    '    listen 80; server_name _;' \
+	    '    client_max_body_size 50m;' \
+	    '    gzip on;' \
+	    '    gzip_types text/plain text/css application/json application/javascript text/xml application/xml;' \
+	    '    add_header X-Content-Type-Options nosniff always;' \
+	    '    add_header Referrer-Policy strict-origin-when-cross-origin always;' \
+	    '    location / {' \
+	    '        proxy_pass http://moapril_api;' \
+	    '        proxy_http_version 1.1;' \
+	    '        proxy_set_header Connection "";' \
+	    '        proxy_set_header Host $$host;' \
+	    '        proxy_set_header X-Real-IP $$remote_addr;' \
+	    '        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;' \
+	    '        proxy_set_header X-Forwarded-Proto $$scheme;' \
+	    '        proxy_connect_timeout 120s; proxy_send_timeout 120s; proxy_read_timeout 120s;' \
+	    '    }' \
+	    '}' > "$(NGINX_CONF)"; \
+	  echo "  [nginx] Created $(NGINX_CONF)"; \
 	fi
 
 help: ## Show available targets
@@ -122,7 +146,7 @@ docker-local-supabase: ## API + nginx only; DB = Supabase (create deploy/supabas
 	@echo "  Stop: make docker-local-down   Docs: deploy/supabase/README.md"
 	@echo ""
 
-prod: _check-nginx-conf ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
+prod: _ensure-nginx-conf ## Production: merge base + deploy/production (Gunicorn workers, prod nginx, restarts)
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d
 	@echo ""
 	@echo "  Stack is up. HTTP (via nginx): http://localhost:$${NGINX_HTTP_PORT:-8080}"
@@ -138,7 +162,7 @@ prod-logs: ## Follow production stack logs
 prod-ps: ## Production stack status
 	$(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) ps
 
-prod-external-db: _check-nginx-conf ## Production compose without bundled Postgres; DATABASE_URL from repo .env (e.g. Supabase)
+prod-external-db: _ensure-nginx-conf ## Production compose without bundled Postgres; DATABASE_URL from repo .env (e.g. Supabase)
 	cd $(PROJECT_ROOT) && $(COMPOSE) $(COMPOSE_BASE) $(COMPOSE_PROD) up --build -d --no-deps api nginx
 	@echo ""
 	@echo "  api + nginx only — ensure .env sets DATABASE_URL (e.g. Supabase). deploy/supabase/README.md"

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Blogs</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Learning articles</p>
+  <h1 class="doc-article__title">{{ title }}</h1>
+  <p class="doc-lead">Read explanations, walkthroughs, interview prep notes, and Python best practices.</p>
+
+  <div class="stack-list">
+    {% for post in posts %}
+    <article class="stack-item">
+      <div>
+        <p class="content-card__eyebrow">{{ "Published" if post.published else "Draft" }}</p>
+        <h2><a href="/blogs/{{ post.slug }}">{{ post.title }}</a></h2>
+        <p>{{ post.body_md[:260] }}{% if post.body_md|length > 260 %}...{% endif %}</p>
+      </div>
+    </article>
+    {% else %}
+    <p class="empty-state">No blog posts yet.</p>
+    {% endfor %}
+  </div>
+</article>
+{% endblock %}

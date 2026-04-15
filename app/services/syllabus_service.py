@@ -16,6 +16,11 @@ class SyllabusService:
         r = await session.exec(stmt)
         return r.unique().all()
 
+    async def get_module(self, session: AsyncSession, module_id: int) -> SyllabusModule | None:
+        stmt = select(SyllabusModule).options(selectinload(SyllabusModule.items)).where(SyllabusModule.id == module_id)
+        r = await session.exec(stmt)
+        return r.unique().first()
+
     async def create_module(self, session: AsyncSession, body: SyllabusModuleCreate) -> SyllabusModule:
         m = SyllabusModule(
             title=body.title,

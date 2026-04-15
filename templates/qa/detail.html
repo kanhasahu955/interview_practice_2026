@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ question.title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/qa">Q&amp;A</a></li>
+    <li aria-current="page">{{ question.title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">{{ question.difficulty|upper }} question</p>
+  <h1 class="doc-article__title">{{ question.title }}</h1>
+  <div class="rich-copy">{{ question.body_md|markdown }}</div>
+
+  <section class="doc-section">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Answers</h2>
+      <span class="badge">{{ question.answers|length }}</span>
+    </div>
+
+    <div class="stack-list">
+      {% for answer in question.answers %}
+      <article class="stack-item answer-card {% if answer.accepted %}answer-card--accepted{% endif %}">
+        <div>
+          <div class="answer-card__meta">
+            {% if answer.accepted %}<span class="badge badge--success">Accepted</span>{% endif %}
+            {% if answer.is_official %}<span class="badge">Official</span>{% endif %}
+          </div>
+          <div class="rich-copy">{{ answer.body_md|markdown }}</div>
+        </div>
+
+        {% if current_user and (current_user.id == question.author_id or current_user.role == "admin") %}
+        <form method="post" action="/qa/answers/{{ answer.id }}/accept">
+          <input type="hidden" name="question_id" value="{{ question.id }}" />
+          <button type="submit" class="btn btn-secondary">Accept answer</button>
+        </form>
+        {% endif %}
+      </article>
+      {% else %}
+      <p class="empty-state">No answers yet. Be the first to respond.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if current_user %}
+  <section class="doc-section">
+    <h2 class="doc-section__title">Add your answer</h2>
+    <form method="post" action="/qa/{{ question.id }}/answers" class="form-card">
+      <label class="form-field">
+        <span>Your answer</span>
+        <textarea name="body_md" rows="8" required></textarea>
+      </label>
+      {% if current_user.role in ["author", "admin"] %}
+      <label class="checkbox-field">
+        <input type="checkbox" name="is_official" value="true" />
+        <span>Mark as official answer</span>
+      </label>
+      {% endif %}
+      <button type="submit" class="btn btn-primary">Post answer</button>
+    </form>
+  </section>
+  {% else %}
+  <p class="empty-state">Log in to answer this question.</p>
+  {% endif %}
+</article>
+{% endblock %}

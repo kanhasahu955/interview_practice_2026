@@ -4,6 +4,7 @@ from fastapi import FastAPI
 
 from app.routes.auth_route import AuthRoutes
 from app.routes.blog_route import BlogRoutes
+from app.routes.chat_route import router as chat_router
 from app.routes.coding_route import CodingRoutes
 from app.routes.consent_route import router as consent_router
 from app.routes.meta_route import MetaRoutes
@@ -21,6 +22,7 @@ def mount_routes(app: FastAPI, settings: Settings) -> None:
     app.include_router(AuthRoutes().router, prefix=f"{v1}/auth", tags=["AUTH"])
     app.include_router(MetaRoutes().router, prefix=f"{v1}/meta", tags=["META"])
     app.include_router(BlogRoutes().router, prefix=f"{v1}/blog", tags=["BLOG"])
+    app.include_router(chat_router, prefix=f"{v1}/chat", tags=["CHAT"])
     app.include_router(TopicsRoutes().router, prefix=v1, tags=["TOPICS"])
     app.include_router(SyllabusRoutes().router, prefix=v1, tags=["SYLLABUS"])
     app.include_router(CodingRoutes().router, prefix=v1, tags=["CODING"])

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Q&amp;A</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Community support</p>
+  <h1 class="doc-article__title">{{ title }}</h1>
+  <p class="doc-lead">Ask Python questions, share code explanations, and help other learners.</p>
+
+  {% if current_user %}
+  <section class="doc-section">
+    <h2 class="doc-section__title">Ask a new question</h2>
+    <form method="post" action="/qa/questions" class="form-card">
+      <label class="form-field">
+        <span>Title</span>
+        <input type="text" name="title" required />
+      </label>
+      <label class="form-field">
+        <span>Difficulty</span>
+        <select name="difficulty">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </label>
+      <label class="form-field">
+        <span>Question details</span>
+        <textarea name="body_md" rows="8" required></textarea>
+      </label>
+      <button type="submit" class="btn btn-primary">Post question</button>
+    </form>
+  </section>
+  {% else %}
+  <p class="empty-state">Log in to ask a question or post an answer.</p>
+  {% endif %}
+
+  <section class="doc-section">
+    <h2 class="doc-section__title">All questions</h2>
+    <div class="stack-list">
+      {% for question in questions %}
+      <article class="stack-item stack-item--spread">
+        <div>
+          <p class="content-card__eyebrow">{{ question.difficulty|upper }}</p>
+          <h3><a href="/qa/{{ question.id }}">{{ question.title }}</a></h3>
+          <p>{{ question.body_md[:220] }}{% if question.body_md|length > 220 %}...{% endif %}</p>
+        </div>
+        <span class="badge">{{ question.answers|length }} answers</span>
+      </article>
+      {% else %}
+      <p class="empty-state">No questions yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+</article>
+{% endblock %}

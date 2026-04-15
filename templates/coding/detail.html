@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ problem.title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/coding">Coding</a></li>
+    <li aria-current="page">{{ problem.title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">{{ problem.difficulty|upper }} challenge</p>
+  <h1 class="doc-article__title">{{ problem.title }}</h1>
+  <div class="rich-copy">{{ problem.problem_md|markdown }}</div>
+
+  {% if problem.starter_code %}
+  <section class="doc-section">
+    <h2 class="doc-section__title">Starter code</h2>
+    <div class="code-block"><pre class="codehilite"><code>{{ problem.starter_code }}</code></pre></div>
+  </section>
+  {% endif %}
+
+  {% if problem.hints_md %}
+  <section class="doc-section">
+    <h2 class="doc-section__title">Hints</h2>
+    <div class="rich-copy">{{ problem.hints_md|markdown }}</div>
+  </section>
+  {% endif %}
+</article>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav" aria-label="Coding links">
+  <p class="sidebar-nav__heading">Next step</p>
+  <ul class="sidebar-nav__list">
+    <li><a href="/qa">Discuss solutions in Q&amp;A</a></li>
+    <li><a href="/chat">Open live chat</a></li>
+    <li><a href="/coding">Back to all challenges</a></li>
+  </ul>
+</nav>
+{% endblock %}

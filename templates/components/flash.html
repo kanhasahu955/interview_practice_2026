@@ -1,0 +1,6 @@
+{% if notice %}
+<div class="flash flash--success" role="status">{{ notice }}</div>
+{% endif %}
+{% if error %}
+<div class="flash flash--error" role="alert">{{ error }}</div>
+{% endif %}

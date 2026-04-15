@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ title }}{% endblock %}
+{% block meta_description %}Python study roadmap, blogs, coding practice, Q&amp;A, and live learner chat in one FastAPI site.{% endblock %}
 
 {% block breadcrumbs %}
 <nav class="breadcrumbs" aria-label="Breadcrumb">
@@ -12,29 +13,132 @@
 
 {% block body %}
 <article class="doc-article">
-  <h1 class="doc-article__title">{{ title }}</h1>
+  <p class="eyebrow">Python study website</p>
+  <h1 class="doc-article__title">Study Python, build projects, and learn with the community.</h1>
   <p class="doc-lead">
-    Learning API and static study layout. Use the header for OpenAPI, health checks, bundled Markdown, and chapter notes under
-    <code>/study/topics/</code>.
+    `mo-april` now combines structured lessons, publishable blogs, interview-style coding practice, Q&amp;A, and a realtime learner room.
   </p>
 
-  <section class="doc-section" id="summary">
-    <h2 class="doc-section__title">Summary</h2>
-    <p>
-      This site is a <strong>FastAPI</strong> backend with Jinja2 pages, versioned JSON under
-      <code>{{ api_prefix }}</code>, and static study content. Open <a href="/docs">API docs</a> to explore endpoints interactively.
-    </p>
+  <section class="hero-actions">
+    <a href="/study" class="btn btn-primary">Start studying</a>
+    <a href="/qa" class="btn btn-secondary">Ask a question</a>
+    <a href="/chat" class="btn btn-ghost">Join live chat</a>
   </section>
 
-  <section class="doc-section" id="introduction">
-    <h2 class="doc-section__title">Introduction</h2>
-    <p>Typical flow:</p>
-    <pre class="code-block"><code># Example base URL (adjust host/port)
-base = "http://127.0.0.1:8000"
-health = f"{base}{{ api_prefix }}/meta/health"</code></pre>
-    <p>
-      Prefer <a href="/reference">Scalar reference</a> or <a href="/docs">Swagger UI</a> for request shapes and schemas.
-    </p>
+  <section class="doc-section" id="overview">
+    <h2 class="doc-section__title">What you can do here</h2>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <h3>Study roadmap</h3>
+        <p>Move through curated Python modules and lessons with examples and definitions.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Read blogs</h3>
+        <p>Learn from written explanations, how-to guides, and Python notes from authors.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Practice coding</h3>
+        <p>Solve interview-style Python problems with starter code and optional hints.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Ask and answer</h3>
+        <p>Post questions, help other learners, and mark accepted answers.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="doc-section" id="study">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Study modules</h2>
+      <a href="/study">View all modules</a>
+    </div>
+    <div class="card-grid">
+      {% for module in modules %}
+      <article class="content-card">
+        <p class="content-card__eyebrow">Module {{ loop.index }}</p>
+        <h3><a href="/study/modules/{{ module.id }}">{{ module.title }}</a></h3>
+        <p>{{ module.description or "Structured lessons with Python definitions, concepts, and examples." }}</p>
+        <p class="content-card__meta">{{ module.items|length }} lessons</p>
+      </article>
+      {% else %}
+      <p class="empty-state">No study modules yet. Create your first module from the dashboard.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="doc-section" id="blogs">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Latest blogs</h2>
+      <a href="/blogs">Browse all blogs</a>
+    </div>
+    <div class="card-grid">
+      {% for post in posts %}
+      <article class="content-card">
+        <p class="content-card__eyebrow">{{ "Published" if post.published else "Draft" }}</p>
+        <h3><a href="/blogs/{{ post.slug }}">{{ post.title }}</a></h3>
+        <p>{{ post.body_md[:180] }}{% if post.body_md|length > 180 %}...{% endif %}</p>
+      </article>
+      {% else %}
+      <p class="empty-state">No blog posts yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="doc-section" id="coding">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Coding challenges</h2>
+      <a href="/coding">Practice now</a>
+    </div>
+    <div class="card-grid">
+      {% for problem in problems %}
+      <article class="content-card">
+        <p class="content-card__eyebrow">{{ problem.difficulty|upper }}</p>
+        <h3><a href="/coding/{{ problem.id }}">{{ problem.title }}</a></h3>
+        <p>{{ problem.problem_md[:180] }}{% if problem.problem_md|length > 180 %}...{% endif %}</p>
+      </article>
+      {% else %}
+      <p class="empty-state">No coding challenges yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="doc-section" id="qa">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Recent questions</h2>
+      <a href="/qa">Open Q&amp;A</a>
+    </div>
+    <div class="stack-list">
+      {% for question in questions %}
+      <article class="stack-item">
+        <div>
+          <h3><a href="/qa/{{ question.id }}">{{ question.title }}</a></h3>
+          <p>{{ question.body_md[:180] }}{% if question.body_md|length > 180 %}...{% endif %}</p>
+        </div>
+        <span class="badge">{{ question.answers|length }} answers</span>
+      </article>
+      {% else %}
+      <p class="empty-state">No questions yet.</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="doc-section" id="chat">
+    <div class="section-heading">
+      <h2 class="doc-section__title">Live chat preview</h2>
+      <a href="/chat">Open {{ chat_room.title }}</a>
+    </div>
+    <div class="stack-list">
+      {% for message in chat_messages %}
+      <article class="stack-item">
+        <div>
+          <strong>{{ message.author_name }}</strong>
+          <p>{{ message.body }}</p>
+        </div>
+      </article>
+      {% else %}
+      <p class="empty-state">The live room is empty. Be the first to start a Python discussion.</p>
+      {% endfor %}
+    </div>
   </section>
 </article>
 {% endblock %}
@@ -43,17 +147,22 @@ health = f"{base}{{ api_prefix }}/meta/health"</code></pre>
 <nav class="sidebar-nav" aria-label="On this page">
   <p class="sidebar-nav__heading">On this page</p>
   <ul class="sidebar-nav__list">
-    <li><a href="#summary">Summary</a></li>
-    <li><a href="#introduction">Introduction</a></li>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#study">Study</a></li>
+    <li><a href="#blogs">Blogs</a></li>
+    <li><a href="#coding">Coding</a></li>
+    <li><a href="#qa">Q&amp;A</a></li>
+    <li><a href="#chat">Live chat</a></li>
   </ul>
 </nav>
 <nav class="sidebar-nav sidebar-nav--spaced" aria-label="Resources">
   <p class="sidebar-nav__heading">Resources</p>
   <ul class="sidebar-nav__list">
+    <li><a href="/study">Study modules</a></li>
+    <li><a href="/blogs">Blog archive</a></li>
+    <li><a href="/coding">Coding challenges</a></li>
+    <li><a href="/qa">Q&amp;A board</a></li>
     <li><a href="/docs">API docs</a></li>
-    <li><a href="/reference">Reference</a></li>
-    <li><a href="{{ api_prefix }}/meta/health">Health JSON</a></li>
-    <li><a href="/study/topics/">Chapters</a></li>
   </ul>
 </nav>
 {% endblock %}

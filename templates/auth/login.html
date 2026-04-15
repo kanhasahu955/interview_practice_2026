@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Login</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article narrow-copy">
+  <p class="eyebrow">Welcome back</p>
+  <h1 class="doc-article__title">Login to continue learning</h1>
+  <form method="post" action="/auth/login" class="form-card">
+    <input type="hidden" name="next_path" value="{{ next_path }}" />
+    <label class="form-field">
+      <span>Email</span>
+      <input type="email" name="username" required />
+    </label>
+    <label class="form-field">
+      <span>Password</span>
+      <input type="password" name="password" required />
+    </label>
+    <button type="submit" class="btn btn-primary">Login</button>
+  </form>
+  <p class="form-help">Need an account? <a href="/auth/register">Create one here</a>.</p>
+</article>
+{% endblock %}

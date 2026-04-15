@@ -4,6 +4,7 @@
 def import_all_models() -> None:
     import app.modules.auth.model  # noqa: F401
     import app.modules.blog.model  # noqa: F401
+    import app.modules.chat.model  # noqa: F401
     import app.modules.coding.model  # noqa: F401
     import app.modules.qa.model  # noqa: F401
     import app.modules.references.model  # noqa: F401

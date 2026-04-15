@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+from typing import List, Optional
 from sqlalchemy import Boolean, Column, Integer, String, Text
 
 from app.db.columns import fk_bigint, pk_bigint
@@ -22,7 +21,7 @@ class Question(SQLModel, table=True):
     body_md: str = Field(sa_column=Column(Text, nullable=False))
     difficulty: str = Field(default="medium", sa_column=Column(String(32), nullable=False))
 
-    answers: list["Answer"] = Relationship(
+    answers: List["Answer"] = Relationship(
         back_populates="question",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -43,4 +42,4 @@ class Answer(SQLModel, table=True):
     is_official: bool = Field(default=False, sa_column=Column(Boolean, nullable=False))
     accepted: bool = Field(default=False, sa_column=Column(Boolean, nullable=False))
 
-    question: Question | None = Relationship(back_populates="answers")
+    question: Optional[Question] = Relationship(back_populates="answers")

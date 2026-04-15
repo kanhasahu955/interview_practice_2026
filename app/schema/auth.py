@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import ConfigDict, EmailStr
+from pydantic import ConfigDict, EmailStr, field_validator
 from sqlmodel import Field, SQLModel
 
 from app.modules.auth.model import UserRole
@@ -28,6 +28,13 @@ class UserCreate(SQLModel):
         description="Plain password (never stored raw; hashed server-side).",
     )
     full_name: str | None = Field(default=None, description="Optional display name.")
+
+    @field_validator("password")
+    @classmethod
+    def validate_password_bytes(cls, value: str) -> str:
+        if len(value.encode("utf-8")) > 72:
+            raise ValueError("Password is too long for secure hashing. Please use at most 72 characters.")
+        return value
 
 
 class UserPublic(SQLModel):

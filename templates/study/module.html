@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ module.title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/study">Study</a></li>
+    <li aria-current="page">{{ module.title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Study module</p>
+  <h1 class="doc-article__title">{{ module.title }}</h1>
+  <p class="doc-lead">{{ module.description or "Explore each lesson in this module to learn definitions, syntax, and working examples." }}</p>
+
+  <div class="toc-list">
+    {% for item in module.items %}
+    <a href="#lesson-{{ item.id }}" class="toc-list__link">{{ loop.index }}. {{ item.title }}</a>
+    {% else %}
+    <p class="empty-state">This module does not have lessons yet.</p>
+    {% endfor %}
+  </div>
+
+  {% for item in module.items %}
+  <section id="lesson-{{ item.id }}" class="doc-section lesson-card">
+    <h2 class="doc-section__title">{{ loop.index }}. {{ item.title }}</h2>
+    <div class="rich-copy">{{ item.content_md|markdown }}</div>
+  </section>
+  {% endfor %}
+</article>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav" aria-label="Lesson list">
+  <p class="sidebar-nav__heading">Lessons</p>
+  <ul class="sidebar-nav__list">
+    {% for item in module.items %}
+    <li><a href="#lesson-{{ item.id }}">{{ item.title }}</a></li>
+    {% else %}
+    <li>No lessons yet</li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endblock %}

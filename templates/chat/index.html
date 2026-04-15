@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ chat_room.title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Live chat</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Realtime community</p>
+  <h1 class="doc-article__title">{{ chat_room.title }}</h1>
+  <p class="doc-lead">{{ chat_room.description }}</p>
+
+  <div
+    class="chat-shell"
+    data-chat-room="{{ chat_room.slug }}"
+    data-chat-ws-path="{{ chat_ws_path }}"
+    data-chat-authenticated="{{ 'true' if current_user else 'false' }}"
+  >
+    <div class="chat-status" id="chat-status">
+      {% if current_user %}
+      Connected as {{ current_user.full_name or current_user.email }}.
+      {% else %}
+      Read-only mode. Log in to send messages.
+      {% endif %}
+    </div>
+
+    <div class="chat-log" id="chat-log">
+      {% for message in chat_messages %}
+      <article class="chat-message">
+        <header>
+          <strong>{{ message.author_name }}</strong>
+          <span>{{ message.created_at }}</span>
+        </header>
+        <p>{{ message.body }}</p>
+      </article>
+      {% else %}
+      <p class="empty-state">No messages yet.</p>
+      {% endfor %}
+    </div>
+
+    <form class="chat-form" id="chat-form">
+      <textarea id="chat-input" rows="3" placeholder="Ask for Python help, share definitions, or discuss code..." {% if not current_user %}disabled{% endif %}></textarea>
+      <button type="submit" class="btn btn-primary" {% if not current_user %}disabled{% endif %}>Send message</button>
+    </form>
+  </div>
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/chat.js" defer></script>
+{% endblock %}

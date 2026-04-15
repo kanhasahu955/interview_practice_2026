@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block meta_description %}{{ post.body_md[:150] }}{% if post.body_md|length > 150 %}...{% endif %}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li><a href="/blogs">Blogs</a></li>
+    <li aria-current="page">{{ post.title }}</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Blog post</p>
+  <h1 class="doc-article__title">{{ post.title }}</h1>
+  <p class="doc-lead">Slug: <code>{{ post.slug }}</code></p>
+  <div class="rich-copy">{{ post.body_md|markdown }}</div>
+</article>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav" aria-label="Blog links">
+  <p class="sidebar-nav__heading">More</p>
+  <ul class="sidebar-nav__list">
+    <li><a href="/blogs">Back to blogs</a></li>
+    <li><a href="/qa">Ask follow-up questions</a></li>
+    <li><a href="/coding">Try coding challenges</a></li>
+  </ul>
+</nav>
+{% endblock %}

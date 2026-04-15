@@ -1,5 +1,4 @@
-from __future__ import annotations
-
+from typing import List, Optional
 from sqlalchemy import Column, Integer, String, Text
 
 from app.db.columns import fk_bigint, pk_bigint
@@ -14,7 +13,7 @@ class SyllabusModule(SQLModel, table=True):
     description: str | None = Field(default=None, sa_column=Column(Text, nullable=True))
     sort_order: int = Field(default=0, sa_column=Column(Integer, nullable=False))
 
-    items: list["SyllabusItem"] = Relationship(
+    items: List["SyllabusItem"] = Relationship(
         back_populates="module",
         sa_relationship_kwargs={
             "cascade": "all, delete-orphan",
@@ -34,4 +33,4 @@ class SyllabusItem(SQLModel, table=True):
     content_md: str = Field(sa_column=Column(Text, nullable=False))
     sort_order: int = Field(default=0, sa_column=Column(Integer, nullable=False))
 
-    module: SyllabusModule | None = Relationship(back_populates="items")
+    module: Optional[SyllabusModule] = Relationship(back_populates="items")

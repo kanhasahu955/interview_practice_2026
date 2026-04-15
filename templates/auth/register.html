@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Create account{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Register</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article narrow-copy">
+  <p class="eyebrow">Create your account</p>
+  <h1 class="doc-article__title">Join the Python study website</h1>
+  <form method="post" action="/auth/register" class="form-card">
+    <label class="form-field">
+      <span>Full name</span>
+      <input type="text" name="full_name" />
+    </label>
+    <label class="form-field">
+      <span>Email</span>
+      <input type="email" name="email" required />
+    </label>
+    <label class="form-field">
+      <span>Password</span>
+      <input type="password" name="password" minlength="8" required />
+    </label>
+    <button type="submit" class="btn btn-primary">Create account</button>
+  </form>
+  <p class="form-help">Already registered? <a href="/auth/login">Login instead</a>.</p>
+</article>
+{% endblock %}

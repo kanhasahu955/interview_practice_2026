@@ -11,6 +11,8 @@ from app.schema.auth import TokenOut, UserCreate
 from app.utils.concurrency import run_in_thread
 
 _pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+PASSWORD_TOO_LONG_CODE = "password_too_long"
+PASSWORD_TOO_LONG_MESSAGE = "Password is too long for secure hashing. Please use at most 72 characters."
 
 
 def _hash_sync(plain: str) -> str:
@@ -25,10 +27,20 @@ class AuthService:
     """JWT + bcrypt; blocking crypto runs in a thread pool."""
 
     async def hash_password(self, plain: str) -> str:
-        return await run_in_thread(_hash_sync, plain)
+        try:
+            return await run_in_thread(_hash_sync, plain)
+        except ValueError as exc:
+            if "72 bytes" in str(exc):
+                raise ValueError(PASSWORD_TOO_LONG_CODE) from exc
+            raise
 
     async def verify_password(self, plain: str, hashed: str) -> bool:
-        return await run_in_thread(_verify_sync, plain, hashed)
+        try:
+            return await run_in_thread(_verify_sync, plain, hashed)
+        except ValueError as exc:
+            if "72 bytes" in str(exc):
+                raise ValueError(PASSWORD_TOO_LONG_CODE) from exc
+            raise
 
     def create_access_token(self, *, subject: str, role: str, expires_delta: timedelta | None = None) -> str:
         s = get_settings()
@@ -61,7 +73,7 @@ class AuthService:
         await session.refresh(user)
         return user
 
-    async def login_token(self, session: AsyncSession, *, username: str, password: str) -> TokenOut:
+    async def authenticate_user(self, session: AsyncSession, *, username: str, password: str) -> User:
         r = await session.exec(select(User).where(User.email == username))
         user = r.first()
         if not user:
@@ -70,6 +82,10 @@ class AuthService:
             raise ValueError("invalid_credentials")
         if not user.is_active:
             raise ValueError("inactive")
+        return user
+
+    async def login_token(self, session: AsyncSession, *, username: str, password: str) -> TokenOut:
+        user = await self.authenticate_user(session, username=username, password=password)
         token = self.create_access_token(subject=str(user.id), role=user.role.value)
         return TokenOut(access_token=token)
 

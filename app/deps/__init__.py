@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, WebSocket, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -19,6 +19,65 @@ async def get_current_user_optional(
     session: AsyncSession = Depends(get_db),
     token: str | None = Depends(oauth2_scheme),
 ) -> User | None:
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        uid = int(payload["sub"])
+    except (ValueError, KeyError, TypeError):
+        return None
+    r = await session.exec(select(User).where(User.id == uid))
+    return r.first()
+
+
+def _extract_cookie_token(raw_cookie: str | None) -> str | None:
+    if not raw_cookie:
+        return None
+    if raw_cookie.startswith("Bearer "):
+        return raw_cookie[7:]
+    return raw_cookie
+
+
+async def get_current_browser_user_optional(
+    request: Request,
+    session: AsyncSession = Depends(get_db),
+) -> User | None:
+    token = _extract_cookie_token(request.cookies.get(get_settings().session_cookie_name))
+    if not token:
+        return None
+    try:
+        payload = decode_token(token)
+        uid = int(payload["sub"])
+    except (ValueError, KeyError, TypeError):
+        return None
+    r = await session.exec(select(User).where(User.id == uid))
+    return r.first()
+
+
+async def get_current_browser_user(
+    user: User | None = Depends(get_current_browser_user_optional),
+) -> User:
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+    return user
+
+
+def require_browser_roles(*roles: UserRole):
+    async def _inner(user: User = Depends(get_current_browser_user)) -> User:
+        if user.role == UserRole.admin:
+            return user
+        if user.role not in roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        return user
+
+    return _inner
+
+
+async def get_websocket_user_optional(
+    websocket: WebSocket,
+    session: AsyncSession = Depends(get_db),
+) -> User | None:
+    token = _extract_cookie_token(websocket.cookies.get(get_settings().session_cookie_name))
     if not token:
         return None
     try:

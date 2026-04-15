@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Study</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Study roadmap</p>
+  <h1 class="doc-article__title">{{ title }}</h1>
+  <p class="doc-lead">Follow the modules in order, learn the definitions, and open each lesson for examples and code.</p>
+
+  <div class="stack-list">
+    {% for module in modules %}
+    <article class="stack-item stack-item--spread">
+      <div>
+        <p class="content-card__eyebrow">Module {{ loop.index }}</p>
+        <h2><a href="/study/modules/{{ module.id }}">{{ module.title }}</a></h2>
+        <p>{{ module.description or "A focused set of Python lessons and explanations." }}</p>
+      </div>
+      <div class="stack-item__aside">
+        <span class="badge">{{ module.items|length }} lessons</span>
+        <a href="/study/modules/{{ module.id }}" class="btn btn-secondary">Open module</a>
+      </div>
+    </article>
+    {% else %}
+    <p class="empty-state">No study modules have been created yet.</p>
+    {% endfor %}
+  </div>
+</article>
+{% endblock %}
+
+{% block sidebar %}
+<nav class="sidebar-nav" aria-label="Study links">
+  <p class="sidebar-nav__heading">Study tips</p>
+  <ul class="sidebar-nav__list">
+    <li>Start from the first module.</li>
+    <li>Open coding challenges after each lesson.</li>
+    <li>Use Q&amp;A when a concept is unclear.</li>
+  </ul>
+</nav>
+{% endblock %}

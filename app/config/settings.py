@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     jwt_secret_key: str = Field(default="change-me-in-production-use-openssl-rand-hex-32")
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24
+    session_cookie_name: str = "mo_access_token"
+    session_cookie_secure: bool = False
+    session_cookie_samesite: str = "lax"
 
     bcrypt_rounds: int = 12
     cors_origins: str = Field(

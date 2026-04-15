@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Author dashboard{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Dashboard</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article">
+  <p class="eyebrow">Authoring</p>
+  <h1 class="doc-article__title">Author dashboard</h1>
+  <p class="doc-lead">Create study modules, lessons, blogs, and coding challenges without leaving the website.</p>
+
+  <div class="dashboard-grid">
+    <section class="form-card">
+      <h2>Create syllabus module</h2>
+      <form method="post" action="/dashboard/syllabus/modules" class="stack-form">
+        <label class="form-field">
+          <span>Module title</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="form-field">
+          <span>Description</span>
+          <textarea name="description" rows="4"></textarea>
+        </label>
+        <label class="form-field">
+          <span>Sort order</span>
+          <input type="number" name="sort_order" value="0" />
+        </label>
+        <button type="submit" class="btn btn-primary">Create module</button>
+      </form>
+    </section>
+
+    <section class="form-card">
+      <h2>Create lesson</h2>
+      <form method="post" action="/dashboard/syllabus/items" class="stack-form">
+        <label class="form-field">
+          <span>Module</span>
+          <select name="module_id" required>
+            {% for module in modules %}
+            <option value="{{ module.id }}">{{ module.title }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Lesson title</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="form-field">
+          <span>Lesson content (Markdown)</span>
+          <textarea name="content_md" rows="8" required></textarea>
+        </label>
+        <label class="form-field">
+          <span>Sort order</span>
+          <input type="number" name="sort_order" value="0" />
+        </label>
+        <button type="submit" class="btn btn-primary">Create lesson</button>
+      </form>
+    </section>
+
+    <section class="form-card">
+      <h2>Create blog post</h2>
+      <form method="post" action="/dashboard/blogs" class="stack-form">
+        <label class="form-field">
+          <span>Title</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="form-field">
+          <span>Slug</span>
+          <input type="text" name="slug" required />
+        </label>
+        <label class="form-field">
+          <span>Body (Markdown)</span>
+          <textarea name="body_md" rows="8" required></textarea>
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" name="published" value="true" />
+          <span>Publish immediately</span>
+        </label>
+        <button type="submit" class="btn btn-primary">Save blog post</button>
+      </form>
+    </section>
+
+    <section class="form-card">
+      <h2>Create coding problem</h2>
+      <form method="post" action="/dashboard/coding" class="stack-form">
+        <label class="form-field">
+          <span>Title</span>
+          <input type="text" name="title" required />
+        </label>
+        <label class="form-field">
+          <span>Difficulty</span>
+          <select name="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <label class="form-field">
+          <span>Problem statement (Markdown)</span>
+          <textarea name="problem_md" rows="8" required></textarea>
+        </label>
+        <label class="form-field">
+          <span>Starter code</span>
+          <textarea name="starter_code" rows="6"></textarea>
+        </label>
+        <label class="form-field">
+          <span>Hints (Markdown)</span>
+          <textarea name="hints_md" rows="4"></textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Create challenge</button>
+      </form>
+    </section>
+  </div>
+
+  <section class="doc-section">
+    <h2 class="doc-section__title">Current content snapshot</h2>
+    <div class="dashboard-summary">
+      <div class="profile-card"><strong>{{ modules|length }}</strong><span>Modules</span></div>
+      <div class="profile-card"><strong>{{ posts|length }}</strong><span>Blog posts</span></div>
+      <div class="profile-card"><strong>{{ problems|length }}</strong><span>Coding problems</span></div>
+      <div class="profile-card"><strong>{{ questions|length }}</strong><span>Recent questions</span></div>
+    </div>
+  </section>
+</article>
+{% endblock %}

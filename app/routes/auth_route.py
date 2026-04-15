@@ -12,7 +12,7 @@ from app.middlewares.rate_limit import limiter
 from app.modules.auth.model import User
 from app.openapi_common import R_401, R_403, R_409, merge_responses
 from app.schema.auth import TokenOut, UserCreate, UserPublic
-from app.services.auth_service import get_auth_service
+from app.services.auth_service import PASSWORD_TOO_LONG_CODE, PASSWORD_TOO_LONG_MESSAGE, get_auth_service
 
 
 class AuthRoutes:
@@ -58,6 +58,8 @@ class AuthRoutes:
             except ValueError as e:
                 if str(e) == "email_taken":
                     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered") from e
+                if str(e) == PASSWORD_TOO_LONG_CODE:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=PASSWORD_TOO_LONG_MESSAGE) from e
                 raise
 
         @r.post(
@@ -99,6 +101,8 @@ class AuthRoutes:
                     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials") from e
                 if msg == "inactive":
                     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user") from e
+                if msg == PASSWORD_TOO_LONG_CODE:
+                    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=PASSWORD_TOO_LONG_MESSAGE) from e
                 raise
 
         @r.get(

@@ -26,6 +26,19 @@ class BlogService:
             return post
         return None
 
+    async def get_post_by_slug(self, session: AsyncSession, slug: str, *, user: User | None) -> BlogPost | None:
+        stmt = select(BlogPost).where(BlogPost.slug == slug)
+        post = (await session.exec(stmt)).first()
+        if not post:
+            return None
+        if post.published:
+            return post
+        if user is None:
+            return None
+        if user.role == UserRole.admin or post.author_id == user.id:
+            return post
+        return None
+
     async def create_post(self, session: AsyncSession, body: BlogPostCreate, *, author: User) -> BlogPost:
         r = await session.exec(select(BlogPost).where(BlogPost.slug == body.slug))
         if r.first():

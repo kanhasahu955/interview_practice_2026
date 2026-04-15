@@ -4,7 +4,10 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}{{ title }}{% endblock %} · mo-april</title>
+  <meta name="description" content="{% block meta_description %}Study Python, read blogs, solve coding questions, ask questions, and learn in realtime.{% endblock %}" />
   <link rel="stylesheet" href="/static/css/app.css" />
+  <style>{{ pygments_css() }}</style>
+  {% block head_extra %}{% endblock %}
 </head>
 <body>
   <header class="site-header">
@@ -18,15 +21,29 @@
       </a>
       <nav class="site-nav" aria-label="Primary">
         <a href="/">Home</a>
+        <a href="/study">Study</a>
+        <a href="/blogs">Blogs</a>
+        <a href="/coding">Coding</a>
+        <a href="/qa">Q&amp;A</a>
+        <a href="/chat">Live Chat</a>
+        {% if current_user and current_user.role in ["author", "admin"] %}
+        <a href="/dashboard">Dashboard</a>
+        {% endif %}
         <a href="/docs">API docs</a>
-        <a href="{{ api_prefix }}/meta/health">Health</a>
-        <a href="/content/overview.md">Content</a>
-        <a href="/study/topics/">Chapters</a>
         <button type="button" class="site-nav__btn" id="cookie-settings-open" aria-controls="cookie-consent-root">
           Cookies
         </button>
       </nav>
       <div class="site-header__tools">
+        {% if current_user %}
+        <a href="/profile" class="header-chip">{{ current_user.full_name or current_user.email }}</a>
+        <form method="post" action="/auth/logout" class="site-nav__form">
+          <button type="submit" class="site-nav__btn">Logout</button>
+        </form>
+        {% else %}
+        <a href="/auth/login" class="header-chip">Login</a>
+        <a href="/auth/register" class="header-chip header-chip--primary">Register</a>
+        {% endif %}
         <button type="button" class="icon-btn" id="theme-toggle" aria-label="Toggle light or dark theme" title="Theme">
           <span class="icon-btn__sun" aria-hidden="true">☀</span>
           <span class="icon-btn__moon" aria-hidden="true">☾</span>
@@ -39,6 +56,7 @@
     <aside class="site-aside site-aside--left" aria-hidden="true"></aside>
     <div class="site-column-main">
       {% block breadcrumbs %}{% endblock %}
+      {% include "components/flash.html" %}
       <main class="site-main" id="main-content">
         {% block body %}{% endblock %}
       </main>
@@ -51,5 +69,6 @@
   <div id="cookie-consent-root" class="cookie-consent-root" hidden></div>
   <script src="/static/js/app.js" defer></script>
   <script src="/static/js/cookie-consent.js" defer></script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

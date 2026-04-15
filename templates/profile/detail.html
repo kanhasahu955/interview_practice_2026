@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Your profile{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="breadcrumbs" aria-label="Breadcrumb">
+  <ol class="breadcrumbs__list">
+    <li><a href="/">Home</a></li>
+    <li aria-current="page">Profile</li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<article class="doc-article narrow-copy">
+  <p class="eyebrow">Account</p>
+  <h1 class="doc-article__title">Your profile</h1>
+
+  <div class="profile-card">
+    <p><strong>Name:</strong> {{ current_user.full_name or "Not set yet" }}</p>
+    <p><strong>Email:</strong> {{ current_user.email }}</p>
+    <p><strong>Role:</strong> {{ current_user.role }}</p>
+    <p><strong>Status:</strong> {{ "Active" if current_user.is_active else "Inactive" }}</p>
+  </div>
+
+  <div class="hero-actions">
+    <a href="/study" class="btn btn-primary">Continue studying</a>
+    <a href="/qa" class="btn btn-secondary">Open Q&amp;A</a>
+    {% if can_access_dashboard %}
+    <a href="/dashboard" class="btn btn-ghost">Open dashboard</a>
+    {% endif %}
+  </div>
+</article>
+{% endblock %}
